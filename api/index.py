@@ -91,7 +91,7 @@ def login():
             current_user = username
             return redirect(url_for('admin'))
         else:
-            return "<p>Username not found. Please register.</p>"
+            return "<p>Username not found. Please register.</p> and <a href='/register'>Register</a>"
     return render_template("login.html")
 
 # show all user device
