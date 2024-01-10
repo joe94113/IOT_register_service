@@ -48,27 +48,39 @@
                 <h5 class="mt-4 mb-3">範例 JSON 檔案</h5>
                 <div class="card">
                     <div class="card-body">
-                        <pre><code>{
-                "username": "yourusername",
-                "devicePair": {
-                    "inputDevice": {
-                        "id": "SmartDisasterPrevention1234",
-                        "type": "SmartDisasterPrevention",
-                    },
-                    "outputDevices": [
-                        { 
-                            "id": "flameAlarm1234",
-                            "type": "flameAlarm",
-                            "subTopic": "SmartDisasterPrevention/flameAlarm/flameAlarm1234"
-                        },
-                        { 
-                            "id": "temperature1234",
-                            "type": "temperature",
-                            "subTopic": "SmartDisasterPrevention/temperature/temperature1234"
-                        }
-                    ]
-                }
-            }</code></pre>
+                        <pre><code>
+{
+    "username": "YOUR_USERNAME",
+    "devicePair": {
+        "inputDevice": {
+            "id": "SmartDisasterPrevention1234",
+            "type": "SmartDisasterPrevention"
+        },
+        "outputDevices": [
+            { 
+                "id": "flameAlarm1234",
+                "type": "flameAlarm",
+                "subTopic": "SmartDisasterPrevention/flameAlarm/flameAlarm1234"
+            },
+            { 
+                "id": "temperature1234",
+                "type": "temperature",
+                "subTopic": "SmartDisasterPrevention/temperature/temperature1234"
+            },
+            { 
+                "id": "humidity1234",
+                "type": "humidity",
+                "subTopic": "SmartDisasterPrevention/humidity/humidity1234"
+            },
+            { 
+                "id": "airConditionerTemperature1234",
+                "type": "airConditionerTemperature",
+                "subTopic": "SmartDisasterPrevention/airConditionerTemperature/airConditionerTemperature1234"
+            }
+        ]
+    }
+}
+        </code></pre>
                     </div>
                 </div>
             </div> 

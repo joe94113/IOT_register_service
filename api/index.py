@@ -2,7 +2,6 @@ from flask import Flask, render_template, request, redirect, url_for
 from flask import session
 from flask import jsonify
 import paho.mqtt.client as mqtt
-import time
 import json
 
 app = Flask(__name__)
@@ -21,26 +20,36 @@ def on_disconnect(client, userdata, rc):
 
 def on_message_joe_service_register(client, userdata, msg):
     global current_user
+    # print(str(msg.payload.decode('utf-8')))
     try:
-        data = json.loads(msg.payload.decode('utf-8'))
+        data = msg.payload.decode('utf-8')
+        try:
+            data = json.loads(data)  # 確保從解碼後的字符串加載 JSON
+        except json.JSONDecodeError:
+            print(f"Payload is not a valid JSON string: {data}")
+            return
+
+        # 確保 data 是一個字典
+        if not isinstance(data, dict):
+            print(f"Payload is not a dictionary: {data}")
+            return
+
         username = data.get('username')
-
         if username and username == current_user:
-            input_device = data['devicePair']['inputDevice']
-            output_devices = data['devicePair']['outputDevices']
-
-            users = read_json("users.json")
-            users[current_user]['inputDevice'] = input_device
-            users[current_user]['outputDevices'] = output_devices
-
-            write_json(users, "users.json")
-            print(f"Device info updated for user: {current_user}")
+            users = read_json("tmp/users.json")
+            if current_user in users:
+                users[current_user]['inputDevice'] = data['devicePair']['inputDevice']
+                users[current_user]['outputDevices'] = data['devicePair']['outputDevices']
+                write_json(users, "tmp/users.json")
+                print(f"Device info updated for user: {current_user}")
+            else:
+                print(f"User {current_user} not found in tmp/users.json")
 
     except Exception as e:
         print(f"Error processing message: {e}")
 
 # 替換為您的 MQTT 伺服器地址
-MQTT_BROKER_ADDRESS = 'broker.MQTTGO.io'
+MQTT_BROKER_ADDRESS = '140.116.86.204'
 
 client = mqtt.Client("joe_client")  # 替換為您的客戶端名稱
 flag_connected = 0
@@ -71,10 +80,10 @@ def index():
 def register():
     if request.method == "POST":
         username = request.form["username"]
-        users = read_json("users.json")
+        users = read_json("tmp/users.json")
         if username not in users:
             users[username] = {'enabled': False}
-            write_json(users, "users.json")
+            write_json(users, "tmp/users.json")
             return redirect(url_for('login'))
         else:
             return "<p>Username already exists.</p> and <a href='/login'>Login</a>"
@@ -85,7 +94,7 @@ def login():
     global current_user
     if request.method == "POST":
         username = request.form["username"]
-        users = read_json("users.json")
+        users = read_json("tmp/users.json")
         if username in users:
             session['username'] = username
             current_user = username
@@ -97,7 +106,7 @@ def login():
 # show all user device
 @app.route("/device", methods=["GET"])
 def device():
-    users = read_json("users.json")
+    users = read_json("tmp/users.json")
     for user in users:
         if 'inputDevice' not in users[user]:
             users[user]['inputDevice'] = {}
@@ -129,12 +138,12 @@ def toggle_user_status():
     data = request.json
     username = data.get('username')
 
-    users = read_json("users.json")
+    users = read_json("tmp/users.json")
 
     if username in users:
         print(users[username]);
         users[username]['enabled'] = users[username]['enabled'] ^ True
-        write_json(users, "users.json")
+        write_json(users, "tmp/users.json")
         return jsonify({"message": "User status updated successfully."}), 200
 
     return jsonify({"error": "User not found."}), 404
@@ -158,7 +167,7 @@ def admin():
             print("Subscribing to joe/service/register")
             client.subscribe("joe/service/register")
             # return "<p>Welcome to the admin page!</p>"
-            users = read_json("users.json")
+            users = read_json("tmp/users.json")
             if current_user in users:
                 if 'inputDevice' not in users[current_user]:
                     users[current_user]['inputDevice'] = {}
@@ -189,5 +198,5 @@ def admin():
         return redirect(url_for('login'))
 
 if __name__ == "__main__":
-    app.run(debug=True, threaded=True)
+    app.run(debug=False, threaded=True)
 
